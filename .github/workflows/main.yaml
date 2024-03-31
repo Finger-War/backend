@@ -9,7 +9,7 @@ env:
 
 jobs:
   CI:
-    environment: dev
+    environment: Development
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
@@ -30,7 +30,7 @@ jobs:
           tags: ${{env.IMAGE_TAG}}
 
   CD:
-    environment: dev
+    environment: Development
     env:
       CONTAINER_NAME: ${{vars.CONTAINER_NAME}}
       CONTAINER_NAMESPACE: ${{vars.CONTAINER_NAMESPACE}}
