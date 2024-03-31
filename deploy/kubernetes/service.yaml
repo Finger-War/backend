@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{CONTAINER_NAME}}-service
+  namespace: {{CONTAINER_NAMESPACE}}
+spec:
+  selector:
+    app: {{CONTAINER_NAME}}-deployment
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: {{CONTAINER_PORT}}

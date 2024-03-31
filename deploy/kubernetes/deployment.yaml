@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{CONTAINER_NAME}}-deployment
+  namespace: {{CONTAINER_NAMESPACE}}
+spec:
+  selector:
+    matchLabels:
+      app: {{CONTAINER_NAME}}-deployment
+  template:
+    metadata:
+      labels:
+        app: {{CONTAINER_NAME}}-deployment
+    spec:
+      imagePullSecrets:
+        - name: {{IMAGE_PULL_SECRETS_NAME}}
+      containers:
+        - name: {{CONTAINER_NAME}}
+          image: {{IMAGE_TAG}}
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 10m
+            limits:
+              memory: 500Mi
+              cpu: 100m
+          ports:
+            - containerPort: {{CONTAINER_PORT}}
+          envFrom:
+            - secretRef:
+                name: {{CONTAINER_NAME}}-secret
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{CONTAINER_PORT}}
+            initialDelaySeconds: 60
+            timeoutSeconds: 10
+            periodSeconds: 60
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{CONTAINER_PORT}}
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 30
