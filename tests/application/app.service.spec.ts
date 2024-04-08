@@ -1,4 +1,4 @@
-import { AppService } from '../../src/application/app.service';
+import { AppService } from '../../src/application/hello.service';
 
 describe('App Service', () => {
   test("Should return 'Hello, Fingerwar!'", () => {
