@@ -1,4 +1,4 @@
-name: CI/CD
+name: Production
 
 on:
   push: 
@@ -9,7 +9,7 @@ env:
 
 jobs:
   CI:
-    environment: Development
+    environment: Production
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
@@ -30,7 +30,7 @@ jobs:
           tags: ${{env.IMAGE_TAG}}
 
   CD:
-    environment: Development
+    environment: Production
     env:
       CONTAINER_NAME: ${{vars.CONTAINER_NAME}}
       CONTAINER_NAMESPACE: ${{vars.CONTAINER_NAMESPACE}}
