@@ -46,9 +46,23 @@ describe('Game Service', () => {
     it('Should return null if the player is not in the queue', async () => {
       const { sut } = await makeSut();
 
-      const player = sut.getPlayer('1');
+      const playerId = '1';
+
+      const player = sut.getPlayer(playerId);
 
       expect(player).toBeNull();
+    });
+
+    it('Should return a player from the queue', async () => {
+      const { sut } = await makeSut();
+
+      const playerId = '1';
+
+      sut.joinQueue(playerId);
+
+      const player = sut.getPlayer(playerId);
+
+      expect(player).toEqual({ id: '1' });
     });
   });
 });
