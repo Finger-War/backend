@@ -1,8 +1,11 @@
 import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
 
+import tsConfigPaths from 'vite-tsconfig-paths';
+import path from 'path';
+
 export default defineConfig({
-  plugins: [swc.vite()],
+  plugins: [swc.vite(), tsConfigPaths()],
   test: {
     environment: 'node',
     setupFiles: 'tests/__unit__/support/unit.ts',
@@ -13,7 +16,7 @@ export default defineConfig({
     alias: [
       {
         find: '@/',
-        replacement: './src/',
+        replacement: path.resolve(__dirname, './src/'),
       },
     ],
   },

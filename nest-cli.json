@@ -7,7 +7,7 @@
       "type": "swc",
       "typeCheck": true,
       "options": {
-        "swcrcPath": "src/infrastructure/.swcrc"
+        "swcrcPath": ".swcrc"
       }
     },
     "deleteOutDir": true
