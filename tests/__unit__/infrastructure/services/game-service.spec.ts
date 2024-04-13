@@ -41,4 +41,14 @@ describe('Game Service', () => {
       expect(sut['queue']).toEqual([]);
     });
   });
+
+  describe('getPlayer', () => {
+    it('Should return null if the player is not in the queue', async () => {
+      const { sut } = await makeSut();
+
+      const player = sut.getPlayer('1');
+
+      expect(player).toBeNull();
+    });
+  });
 });
