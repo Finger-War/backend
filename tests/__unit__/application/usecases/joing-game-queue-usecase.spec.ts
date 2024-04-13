@@ -18,4 +18,12 @@ describe('JoinGameQueueUseCase', () => {
 
     expect(gameService.getPlayer(playerId)).toBeDefined();
   });
+
+  it('Should add player to the game queue if player does not already exist', () => {
+    const playerId = 'player1';
+
+    useCase.execute(playerId);
+
+    expect(gameService.getPlayer(playerId)).toBeDefined();
+  });
 });
