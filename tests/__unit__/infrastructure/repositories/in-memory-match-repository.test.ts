@@ -26,4 +26,12 @@ describe('In Memory Match Repository', () => {
       expect(repository['match']).toContain(match);
     });
   });
+
+  describe('findById', () => {
+    it('Should return null if no match is found with the specified id', () => {
+      const result = repository.findById('1');
+
+      expect(result).toBeNull();
+    });
+  });
 });
