@@ -3,38 +3,42 @@ import { Test } from '@nestjs/testing';
 import { GameService } from '@/infrastructure/services/game-service';
 import { InMemoryMatchRepository } from '@/infrastructure/repositories/in-memory-match-repository';
 
+const makeSut = async () => {
+  const moduleRef = await Test.createTestingModule({
+    providers: [
+      GameService,
+      { provide: InMemoryMatchRepository, useClass: InMemoryMatchRepository },
+    ],
+  }).compile();
+
+  const sut = moduleRef.get<GameService>(GameService);
+
+  return { sut };
+};
+
 describe('Game Service', () => {
-  let gameService: GameService;
-
-  beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        GameService,
-        { provide: InMemoryMatchRepository, useClass: InMemoryMatchRepository },
-      ],
-    }).compile();
-
-    gameService = moduleRef.get<GameService>(GameService);
-  });
-
   describe('joinQueue', () => {
-    it('Should add a player to the queue', () => {
-      const playerId = 'player1';
+    it('Should add a player to the queue', async () => {
+      const { sut } = await makeSut();
 
-      gameService.joinQueue(playerId);
+      const playerId = '1';
 
-      expect(gameService['queue']).toEqual([{ id: playerId }]);
+      sut.joinQueue(playerId);
+
+      expect(sut['queue']).toEqual([{ id: playerId }]);
     });
   });
 
   describe('getOutQueue', () => {
-    it('Should remove a player from the queue', () => {
-      const playerId = 'player1';
+    it('Should remove a player from the queue', async () => {
+      const { sut } = await makeSut();
 
-      gameService.joinQueue(playerId);
-      gameService.getOutQueue(playerId);
+      const playerId = '1';
 
-      expect(gameService['queue']).toEqual([]);
+      sut.joinQueue(playerId);
+      sut.getOutQueue(playerId);
+
+      expect(sut['queue']).toEqual([]);
     });
   });
 });
