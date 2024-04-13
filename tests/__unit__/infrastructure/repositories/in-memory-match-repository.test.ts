@@ -33,5 +33,14 @@ describe('In Memory Match Repository', () => {
 
       expect(result).toBeNull();
     });
+
+    it('Should return the match with the specified id', () => {
+      const match = { id: '1', players: [] } as Match;
+      repository['match'] = [match];
+
+      const result = repository.findById('1');
+
+      expect(result).toBe(match);
+    });
   });
 });
