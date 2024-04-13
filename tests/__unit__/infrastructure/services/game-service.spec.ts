@@ -26,4 +26,15 @@ describe('Game Service', () => {
       expect(gameService['queue']).toEqual([{ id: playerId }]);
     });
   });
+
+  describe('getOutQueue', () => {
+    it('Should remove a player from the queue', () => {
+      const playerId = 'player1';
+
+      gameService.joinQueue(playerId);
+      gameService.getOutQueue(playerId);
+
+      expect(gameService['queue']).toEqual([]);
+    });
+  });
 });
