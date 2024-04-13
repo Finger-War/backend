@@ -72,7 +72,7 @@ describe('Game Service', () => {
 
       const players = sut.getPlayers();
 
-      expect(players).toEqual({});
+      expect(players).toEqual([]);
     });
 
     it('Should return an object with two players', async () => {
@@ -83,10 +83,7 @@ describe('Game Service', () => {
 
       const players = sut.getPlayers();
 
-      expect(players).toEqual({
-        playerOne: { id: '1' },
-        playerTwo: { id: '2' },
-      });
+      expect(players).toEqual([{ id: '1' }, { id: '2' }]);
     });
   });
 });
