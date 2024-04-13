@@ -65,4 +65,14 @@ describe('Game Service', () => {
       expect(player).toEqual({ id: '1' });
     });
   });
+
+  describe('getPlayers', () => {
+    it('Should return an empty object if the queue has less than 2 players', async () => {
+      const { sut } = await makeSut();
+
+      const players = sut.getPlayers();
+
+      expect(players).toEqual({});
+    });
+  });
 });
