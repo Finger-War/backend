@@ -47,6 +47,15 @@ describe('In Memory Match Repository', () => {
 
       expect(result).toBe(match);
     });
-    a;
+  });
+
+  describe('findByPlayerId', () => {
+    it('Should return null if no match is found containing the specified player id', async () => {
+      const { sut } = await makeSut();
+
+      const result = sut.findByPlayerId('playerOne');
+
+      expect(result).toBeNull();
+    });
   });
 });
