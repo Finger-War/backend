@@ -58,4 +58,17 @@ describe('In Memory Match Repository', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('remove', () => {
+    it('Should remove the match from the repository', async () => {
+      const { sut } = await makeSut();
+
+      const match = { id: '1', players: [] } as Match;
+      sut['match'] = [match];
+
+      sut.remove(match);
+
+      expect(sut['match']).not.toContain(match);
+    });
+  });
 });
