@@ -13,4 +13,10 @@ export class InMemoryMatchRepository {
   findById(id: string): Match | null {
     return this.match.find((match) => match.id === id);
   }
+
+  findByPlayerId(playerId: string): Match | null {
+    return this.match.find((match) =>
+      match.players.some((player) => player.id === playerId),
+    );
+  }
 }
