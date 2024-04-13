@@ -74,5 +74,19 @@ describe('Game Service', () => {
 
       expect(players).toEqual({});
     });
+
+    it('Should return an object with two players', async () => {
+      const { sut } = await makeSut();
+
+      sut.joinQueue('1');
+      sut.joinQueue('2');
+
+      const players = sut.getPlayers();
+
+      expect(players).toEqual({
+        playerOne: { id: '1' },
+        playerTwo: { id: '2' },
+      });
+    });
   });
 });
