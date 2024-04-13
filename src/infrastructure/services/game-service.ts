@@ -25,6 +25,6 @@ export class GameService implements IGameService {
   }
 
   getPlayer(playerId: string): Player | null {
-    return this.queue.find((player) => player.id === playerId);
+    return this.queue.find((player) => player.id === playerId) ?? null;
   }
 }
