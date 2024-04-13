@@ -1,28 +1,31 @@
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
 import { GameService } from '@/infrastructure/services/game-service';
 
-describe('JoinGameQueueUseCase', () => {
-  let useCase: JoingGameQueueUseCase;
-  let gameService: GameService;
+const makeSut = () => {
+  const gameService = new GameService();
+  const sut = new JoingGameQueueUseCase(gameService);
 
-  beforeEach(() => {
-    gameService = new GameService();
-    useCase = new JoingGameQueueUseCase(gameService);
-  });
+  return { sut, gameService };
+};
 
+describe('Join Game Queue UseCase', () => {
   it('Should not add player to the game queue if player already exists', () => {
-    const playerId = 'player1';
+    const { sut, gameService } = makeSut();
+
+    const playerId = '1';
     gameService.joinQueue(playerId);
 
-    useCase.execute(playerId);
+    sut.execute(playerId);
 
     expect(gameService.getPlayer(playerId)).toBeDefined();
   });
 
   it('Should add player to the game queue if player does not already exist', () => {
-    const playerId = 'player1';
+    const { sut, gameService } = makeSut();
 
-    useCase.execute(playerId);
+    const playerId = '1';
+
+    sut.execute(playerId);
 
     expect(gameService.getPlayer(playerId)).toBeDefined();
   });
