@@ -9,4 +9,8 @@ export class InMemoryMatchRepository {
   add(match: Match): void {
     this.match.push(match);
   }
+
+  findById(id: string): Match | null {
+    return this.match.find((match) => match.id === id);
+  }
 }
