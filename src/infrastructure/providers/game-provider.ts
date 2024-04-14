@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+
+import { Server, Socket } from 'socket.io';
 
 export interface IGameProvider {
   handleConnection(client: Socket): void;

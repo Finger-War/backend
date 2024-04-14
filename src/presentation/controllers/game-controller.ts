@@ -1,7 +1,7 @@
-import { Socket } from 'socket.io';
 import { WebSocketGateway, SubscribeMessage } from '@nestjs/websockets';
 
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
+import { Socket } from 'socket.io';
 
 export interface IGameController {
   handleStart(client: Socket): void;

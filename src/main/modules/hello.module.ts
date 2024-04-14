@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
-import { HelloController } from '@/presentation/controllers/hello-controller';
 import { HelloUseCase } from '@/application/usecases/hello-usecase';
+import { HelloController } from '@/presentation/controllers/hello-controller';
 
 @Module({
   imports: [],

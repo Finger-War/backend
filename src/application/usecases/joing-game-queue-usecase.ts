@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
 import { JoinGameQueue } from '@/domain/usecases/join-game-queue-usecase';
-
 import { GameService } from '@/infrastructure/services/game-service';
 
 @Injectable()
