@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 
 import { Match } from '@/domain/entities/match';
-
 import { InMemoryMatchRepository } from '@/infrastructure/repositories/in-memory-match-repository';
 
 const makeSut = async () => {

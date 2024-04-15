@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 
-import { GameService } from '@/infrastructure/services/game-service';
 import { InMemoryMatchRepository } from '@/infrastructure/repositories/in-memory-match-repository';
+import { GameService } from '@/infrastructure/services/game-service';
 
 const makeSut = async () => {
   const moduleRef = await Test.createTestingModule({
