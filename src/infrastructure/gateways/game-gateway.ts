@@ -9,17 +9,17 @@ import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-u
 import { envs } from '@/main/config/envs';
 import { Server, Socket } from 'socket.io';
 
-export interface IGameProvider {
+export interface IGameGateway {
   handleConnection(client: Socket): void;
   handleDisconnect(client: Socket): void;
 }
 
 @WebSocketGateway({ cors: true, port: envs.WS_PORT })
-export class GameProvider implements IGameProvider {
+export class GameGateway implements IGameGateway {
   @WebSocketServer()
   private server: Server;
 
-  private readonly logger = new Logger(GameProvider.name);
+  private readonly logger = new Logger(GameGateway.name);
 
   constructor(private readonly joinGameQueueUseCase: JoingGameQueueUseCase) {}
 
