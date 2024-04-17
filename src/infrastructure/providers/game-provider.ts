@@ -1,6 +1,12 @@
 import { Logger } from '@nestjs/common';
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 
+import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
+import { envs } from '@/main/config/envs';
 import { Server, Socket } from 'socket.io';
 
 export interface IGameProvider {
@@ -8,12 +14,14 @@ export interface IGameProvider {
   handleDisconnect(client: Socket): void;
 }
 
-@WebSocketGateway(5000, { cors: true })
+@WebSocketGateway({ cors: true, port: envs.WS_PORT })
 export class GameProvider implements IGameProvider {
   @WebSocketServer()
   private server: Server;
 
   private readonly logger = new Logger(GameProvider.name);
+
+  constructor(private readonly joinGameQueueUseCase: JoingGameQueueUseCase) {}
 
   handleConnection(client: Socket) {
     const { sockets } = this.server.sockets;
@@ -24,5 +32,12 @@ export class GameProvider implements IGameProvider {
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client id: ${client.id} disconnected`);
+  }
+
+  @SubscribeMessage('join-queue')
+  handleStart(client: Socket): void {
+    Logger.debug(`Client ${client.id} joined the queue`);
+
+    this.joinGameQueueUseCase.execute(client.id);
   }
 }
