@@ -9,4 +9,15 @@ describe('Get Out Queue Use Case', () => {
 
     expect(sut.execute(playerId)).toBeUndefined();
   });
+
+  it('Should remove player from the game queue if player exist', () => {
+    const playerId = '1';
+    const gameService = new GameService();
+    gameService.joinQueue(playerId);
+    const sut = new GetOutQueueUseCase(gameService);
+
+    sut.execute(playerId);
+
+    expect(gameService.getPlayer(playerId)).toBeDefined();
+  });
 });
