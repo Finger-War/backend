@@ -19,7 +19,7 @@ async function bootstrap() {
   app.useWebSocketAdapter(new SocketIoAdapter(app));
 
   const configService = app.get(ConfigService);
-  const httpPort = configService.get<string>('HTTP_PORT');
+  const httpPort = configService.get<string>('CONTAINER_PORT');
 
   await app.listen(httpPort, '0.0.0.0');
 

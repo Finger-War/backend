@@ -14,7 +14,7 @@ export interface IGameGateway {
   handleDisconnect(client: Socket): void;
 }
 
-@WebSocketGateway({ cors: true, port: envs.WS_PORT })
+@WebSocketGateway({ cors: true, port: envs.CONTAINER_PORT })
 export class GameGateway implements IGameGateway {
   @WebSocketServer()
   private server: Server;
@@ -26,7 +26,7 @@ export class GameGateway implements IGameGateway {
   handleConnection(client: Socket) {
     const { sockets } = this.server.sockets;
 
-    this.logger.debug(`Number of connected clients: ${sockets.size}`);
+    this.logger.log(`Number of connected clients: ${sockets.size}`);
     this.logger.log(`Client id: ${client.id} connected`);
   }
 
