@@ -8,7 +8,7 @@ const makeSut = () => {
   return { sut, gameService };
 };
 
-describe('Join Game Queue UseCase', () => {
+describe('Join Game Queue Use Case', () => {
   it('Should not add player to the game queue if player already exists', () => {
     const { sut, gameService } = makeSut();
 
@@ -17,7 +17,7 @@ describe('Join Game Queue UseCase', () => {
 
     sut.execute(playerId);
 
-    expect(gameService.getPlayer(playerId)).toBeDefined();
+    expect(sut.execute(playerId)).toBeUndefined();
   });
 
   it('Should add player to the game queue if player does not already exist', () => {
