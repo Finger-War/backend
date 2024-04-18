@@ -26,7 +26,7 @@ export class GameGateway implements IGameGateway {
   handleConnection(client: Socket) {
     const { sockets } = this.server.sockets;
 
-    this.logger.log(`Number of connected clients: ${sockets.size}`);
+    this.logger.debug(`Number of connected clients: ${sockets.size}`);
     this.logger.log(`Client id: ${client.id} connected`);
   }
 
@@ -36,8 +36,6 @@ export class GameGateway implements IGameGateway {
 
   @SubscribeMessage('join-queue')
   handleStart(client: Socket): void {
-    Logger.debug(`Client ${client.id} joined the queue`);
-
     this.joinGameQueueUseCase.execute(client.id);
   }
 }
