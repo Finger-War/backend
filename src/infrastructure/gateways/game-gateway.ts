@@ -5,6 +5,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 
+import { GetOutQueueUseCase } from '@/application/usecases/get-out-queue-usecase';
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
 import { envs } from '@/main/config/envs';
 import { GameConstants } from '@/main/constants/game-constants';
@@ -22,12 +23,15 @@ export class GameGateway implements IGameGateway {
 
   private readonly logger = new Logger(GameGateway.name);
 
-  constructor(private readonly joinGameQueueUseCase: JoingGameQueueUseCase) {}
+  constructor(
+    private readonly joinGameQueueUseCase: JoingGameQueueUseCase,
+    private readonly getOutQueueUseCase: GetOutQueueUseCase,
+  ) {}
 
   handleConnection(client: Socket) {
     const { sockets } = this.server.sockets;
 
-    this.logger.log(`Number of connected clients: ${sockets.size}`);
+    this.logger.debug(`Number of connected clients: ${sockets.size}`);
     this.logger.log(`Client id: ${client.id} connected`);
   }
 
@@ -36,7 +40,12 @@ export class GameGateway implements IGameGateway {
   }
 
   @SubscribeMessage(GameConstants.server.joinQueue)
-  handleStart(client: Socket): void {
+  handleJoinQueue(client: Socket): void {
     this.joinGameQueueUseCase.execute(client.id);
+  }
+
+  @SubscribeMessage(GameConstants.server.getOutQueue)
+  handleGetOutQueue(client: Socket): void {
+    this.getOutQueueUseCase.execute(client.id);
   }
 }
