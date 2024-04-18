@@ -7,6 +7,7 @@ import {
 
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
 import { envs } from '@/main/config/envs';
+import { GameConstants } from '@/main/constants/game-constants';
 import { Server, Socket } from 'socket.io';
 
 export interface IGameGateway {
@@ -34,7 +35,7 @@ export class GameGateway implements IGameGateway {
     this.logger.log(`Client id: ${client.id} disconnected`);
   }
 
-  @SubscribeMessage('join-queue')
+  @SubscribeMessage(GameConstants.server.joinQueue)
   handleStart(client: Socket): void {
     this.joinGameQueueUseCase.execute(client.id);
   }
