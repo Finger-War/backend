@@ -14,4 +14,4 @@ import { GameService } from '@/infrastructure/services/game-service';
     GameGateway,
   ],
 })
-export class GameProviderModule {}
+export class GameModule {}

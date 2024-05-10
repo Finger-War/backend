@@ -8,9 +8,9 @@ export class GetOutQueueUseCase implements GetOutQueue {
   constructor(private readonly gameService: GameService) {}
 
   execute(playerId: string) {
-    const playerAlreadyExistsInQueue = this.gameService.getPlayer(playerId);
+    const playerExistsInQueue = this.gameService.getPlayer(playerId);
 
-    if (!playerAlreadyExistsInQueue) {
+    if (!playerExistsInQueue) {
       return;
     }
 
