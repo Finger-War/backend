@@ -70,9 +70,9 @@ describe('Game Service', () => {
     it('Should return an empty object if the queue has less than 2 players', async () => {
       const { sut } = await makeSut();
 
-      const players = sut.getPlayers();
+      const players = sut.tryMatch();
 
-      expect(players).toEqual([]);
+      expect(players).toEqual(undefined);
     });
 
     it('Should return an object with two players', async () => {
@@ -81,7 +81,28 @@ describe('Game Service', () => {
       sut.joinQueue('1');
       sut.joinQueue('2');
 
-      const players = sut.getPlayers();
+      const players = sut.tryMatch();
+
+      expect(players).toEqual([{ id: '1' }, { id: '2' }]);
+    });
+  });
+
+  describe('tryMatch', () => {
+    it('Should return an empty object if the queue has less than 2 players', async () => {
+      const { sut } = await makeSut();
+
+      const players = sut.tryMatch();
+
+      expect(players).toEqual(undefined);
+    });
+
+    it('Should return an object with two players', async () => {
+      const { sut } = await makeSut();
+
+      sut.joinQueue('1');
+      sut.joinQueue('2');
+
+      const players = sut.tryMatch();
 
       expect(players).toEqual([{ id: '1' }, { id: '2' }]);
     });

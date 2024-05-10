@@ -7,6 +7,7 @@ import {
 
 import { GetOutQueueUseCase } from '@/application/usecases/get-out-queue-usecase';
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
+import { GameService } from '@/infrastructure/services/game-service';
 import { envs } from '@/main/config/envs';
 import { GameConstants } from '@/main/constants/game-constants';
 import { Server, Socket } from 'socket.io';
@@ -26,6 +27,7 @@ export class GameGateway implements IGameGateway {
   constructor(
     private readonly joinGameQueueUseCase: JoingGameQueueUseCase,
     private readonly getOutQueueUseCase: GetOutQueueUseCase,
+    private readonly gameService: GameService,
   ) {}
 
   handleConnection(client: Socket) {
@@ -42,10 +44,28 @@ export class GameGateway implements IGameGateway {
   @SubscribeMessage(GameConstants.server.joinQueue)
   handleJoinQueue(client: Socket): void {
     this.joinGameQueueUseCase.execute(client.id);
+    this.handleMatchQueue();
   }
 
   @SubscribeMessage(GameConstants.server.getOutQueue)
   handleGetOutQueue(client: Socket): void {
     this.getOutQueueUseCase.execute(client.id);
+  }
+
+  handleMatchQueue() {
+    const isMatch = this.gameService.tryMatch();
+
+    if (!isMatch) {
+      return;
+    }
+
+    const [playerOne, playerTwo] = isMatch;
+
+    const roomId = `match:${playerOne.id}-${playerTwo.id}`;
+
+    this.server.sockets.sockets.get(playerOne.id).join(roomId);
+    this.server.sockets.sockets.get(playerTwo.id).join(roomId);
+
+    this.server.to(roomId).emit(GameConstants.server.matchStart);
   }
 }

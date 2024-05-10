@@ -6,7 +6,7 @@ export interface IGameService {
   joinQueue(playerId: string): void;
   getOutQueue(playerId: string): void;
   getPlayer(playerId: string): Player | null;
-  getPlayers(): Player[];
+  tryMatch(): void;
 }
 
 @Injectable()
@@ -27,9 +27,9 @@ export class GameService implements IGameService {
     return this.queue.find((player) => player.id === playerId) ?? null;
   }
 
-  getPlayers(): Player[] {
+  tryMatch() {
     if (this.queue.length < 2) {
-      return [];
+      return;
     }
 
     const playerOne = this.queue.shift();
