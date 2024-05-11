@@ -3,5 +3,7 @@ export const GameConstants = {
     joinQueue: 'join-queue',
     getOutQueue: 'get-out-queue',
     matchStart: 'match-start',
+    handleWord: 'handle-word',
+    adversaryWords: 'adversary-words',
   },
 };

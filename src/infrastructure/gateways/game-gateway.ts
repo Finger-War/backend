@@ -52,6 +52,25 @@ export class GameGateway implements IGameGateway {
     this.getOutQueueUseCase.execute(client.id);
   }
 
+  @SubscribeMessage(GameConstants.server.handleWord)
+  handleWord(client: Socket, word: string): void {
+    const roomId = Array.from(client.rooms.values()).find((room) =>
+      room.startsWith('match:'),
+    );
+
+    if (!roomId) {
+      return;
+    }
+
+    const adversary = Array.from(
+      this.server.sockets.adapter.rooms.get(roomId),
+    ).find((room) => room !== client.id);
+
+    if (adversary) {
+      client.to(adversary).emit(GameConstants.server.adversaryWords, word);
+    }
+  }
+
   handleMatchQueue() {
     const isMatch = this.gameService.tryMatch();
 
