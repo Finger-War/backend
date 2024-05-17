@@ -22,6 +22,16 @@ const makeSut = async () => {
   return { sut, gameService };
 };
 
+const makeServerMock = (): Server =>
+  ({
+    sockets: {
+      sockets: {
+        get: vitest.fn().mockReturnValue({ join: vitest.fn() }),
+      },
+    },
+    to: vitest.fn().mockReturnValue({ emit: vitest.fn() }),
+  }) as any;
+
 describe('Match Making Service', () => {
   describe('handle', () => {
     it('Should start a match if there is a match available', async () => {
@@ -35,14 +45,7 @@ describe('Match Making Service', () => {
         .spyOn(gameService, 'tryMatch')
         .mockReturnValue([playerOne, playerTwo]);
 
-      const server: Server = {
-        sockets: {
-          sockets: {
-            get: vitest.fn().mockReturnValue({ join: vitest.fn() }),
-          },
-        },
-        to: vitest.fn().mockReturnValue({ emit: vitest.fn() }),
-      } as any;
+      const server = makeServerMock();
 
       sut.handle(server);
 
@@ -59,19 +62,42 @@ describe('Match Making Service', () => {
 
       vitest.spyOn(gameService, 'tryMatch').mockReturnValue(undefined);
 
-      const server: Server = {
-        sockets: {
-          sockets: {
-            get: vitest.fn().mockReturnValue({ join: vitest.fn() }),
-          },
-        },
-        to: vitest.fn().mockReturnValue({ emit: vitest.fn() }),
-      } as any;
+      const server = makeServerMock();
 
       sut.handle(server);
 
       expect(server.sockets.sockets.get).not.toHaveBeenCalled();
       expect(server.to).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('startMatch', () => {
+    it('Should stop match when time reaches zero', async () => {
+      const { sut } = await makeSut();
+
+      vi.useFakeTimers();
+
+      const playerOne = { id: 'player1' };
+      const playerTwo = { id: 'player2' };
+      const roomId = `match:${playerOne.id}-${playerTwo.id}`;
+
+      const server = makeServerMock();
+
+      const stopMatchSpy = vitest.spyOn(sut, 'stopMatch');
+
+      sut['startMatch'](server, roomId, 1);
+
+      vi.runAllTimers();
+
+      expect(stopMatchSpy).toHaveBeenCalledWith(server, roomId);
+      expect(server.to).toHaveBeenCalledWith(roomId);
+      expect(server.to(roomId).emit).toHaveBeenCalledWith(
+        GameConstants.client.matchTimer,
+        1,
+      );
+      expect(server.to(roomId).emit).toHaveBeenCalledWith(
+        GameConstants.client.matchStop,
+      );
     });
   });
 });
