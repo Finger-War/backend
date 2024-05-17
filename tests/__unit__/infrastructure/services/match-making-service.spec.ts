@@ -53,5 +53,25 @@ describe('Match Making Service', () => {
         GameConstants.client.matchStart,
       );
     });
+
+    it('Should not start a match if there is no match available', async () => {
+      const { sut, gameService } = await makeSut();
+
+      vitest.spyOn(gameService, 'tryMatch').mockReturnValue(undefined);
+
+      const server: Server = {
+        sockets: {
+          sockets: {
+            get: vitest.fn().mockReturnValue({ join: vitest.fn() }),
+          },
+        },
+        to: vitest.fn().mockReturnValue({ emit: vitest.fn() }),
+      } as any;
+
+      sut.handle(server);
+
+      expect(server.sockets.sockets.get).not.toHaveBeenCalled();
+      expect(server.to).not.toHaveBeenCalled();
+    });
   });
 });
