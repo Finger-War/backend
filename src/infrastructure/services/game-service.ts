@@ -6,7 +6,7 @@ export interface IGameService {
   joinQueue(playerId: string): void;
   getOutQueue(playerId: string): void;
   getPlayer(playerId: string): Player | null;
-  tryMatch(): void;
+  tryMatch(): Player[] | undefined;
 }
 
 @Injectable()
