@@ -32,7 +32,7 @@ export class MatchMakingService implements IMatchMakingService {
     this.startMatch(server, roomId, 30);
   }
 
-  private startMatch(server: Server, roomId: string, time: number): void {
+  startMatch(server: Server, roomId: string, time: number): void {
     if (time === 0) {
       this.stopMatch(server, roomId);
       return;
@@ -45,7 +45,7 @@ export class MatchMakingService implements IMatchMakingService {
     }, 1000);
   }
 
-  private stopMatch(server: Server, roomId: string): void {
+  stopMatch(server: Server, roomId: string): void {
     server.to(roomId).emit(GameConstants.client.matchStop);
   }
 }
