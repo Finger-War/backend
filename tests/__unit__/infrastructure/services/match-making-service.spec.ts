@@ -99,5 +99,32 @@ describe('Match Making Service', () => {
         GameConstants.client.matchStop,
       );
     });
+
+    it('Should continue the match timer until it reaches zero', async () => {
+      const { sut } = await makeSut();
+
+      vi.useFakeTimers();
+
+      const playerOne = { id: 'player1' };
+      const playerTwo = { id: 'player2' };
+      const roomId = `match:${playerOne.id}-${playerTwo.id}`;
+
+      const server = makeServerMock();
+
+      sut['startMatch'](server, roomId, 1);
+
+      vi.advanceTimersByTime(1000);
+
+      expect(server.to(roomId).emit).toHaveBeenCalledWith(
+        GameConstants.client.matchTimer,
+        1,
+      );
+
+      vi.advanceTimersByTime(1000);
+
+      expect(server.to(roomId).emit).toHaveBeenCalledWith(
+        GameConstants.client.matchStop,
+      );
+    });
   });
 });
