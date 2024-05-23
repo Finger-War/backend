@@ -6,6 +6,7 @@ import {
 } from '@nestjs/websockets';
 
 import { GetOutQueueUseCase } from '@/application/usecases/get-out-queue-usecase';
+import { HandleWordUseCase } from '@/application/usecases/handle-word-usecase';
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
 import { MatchMakingService } from '@/infrastructure/services/match-making-service';
 import { envs } from '@/main/config/envs';
@@ -27,6 +28,7 @@ export class GameGateway implements IGameGateway {
   constructor(
     private readonly joinGameQueueUseCase: JoingGameQueueUseCase,
     private readonly getOutQueueUseCase: GetOutQueueUseCase,
+    private readonly handleWordUseCase: HandleWordUseCase,
     private readonly matchMakingService: MatchMakingService,
   ) {}
 
@@ -55,20 +57,6 @@ export class GameGateway implements IGameGateway {
 
   @SubscribeMessage(GameConstants.server.handleWord)
   handleWord(client: Socket, word: string): void {
-    const roomId = Array.from(client.rooms.values()).find((room) =>
-      room.startsWith('match:'),
-    );
-
-    if (!roomId) {
-      return;
-    }
-
-    const adversary = Array.from(
-      this.server.sockets.adapter.rooms.get(roomId),
-    ).find((room) => room !== client.id);
-
-    if (adversary) {
-      client.to(adversary).emit(GameConstants.client.adversaryWords, word);
-    }
+    this.handleWordUseCase.execute(this.server, client, word);
   }
 }
