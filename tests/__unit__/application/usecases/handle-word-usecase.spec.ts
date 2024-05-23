@@ -61,4 +61,26 @@ describe('Handle Word Use Case', () => {
 
     expect(client.to).not.toHaveBeenCalled();
   });
+
+  it('Should emit the word to the adversary if both clients are in the match room', async () => {
+    const { sut } = await makeSut();
+
+    const client = makeClientMock();
+    const server = makeServerMock();
+
+    client.rooms.add('match:any_room');
+
+    server.sockets.adapter.rooms.set(
+      'match:any_room',
+      new Set<string>(['any_player_one', 'any_player_two']),
+    );
+
+    sut.execute(server, client, 'any_word');
+
+    expect(client.to).toHaveBeenCalledWith('any_player_two');
+    expect(client.emit).toHaveBeenCalledWith(
+      GameConstants.client.adversaryWords,
+      'any_word',
+    );
+  });
 });
