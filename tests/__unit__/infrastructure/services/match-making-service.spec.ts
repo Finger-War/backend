@@ -3,68 +3,99 @@ import { Test } from '@nestjs/testing';
 import { InMemoryMatchRepository } from '@/infrastructure/repositories/in-memory-match-repository';
 import { GameService } from '@/infrastructure/services/game-service';
 import { MatchMakingService } from '@/infrastructure/services/match-making-service';
+import { WordsService } from '@/infrastructure/services/words-service';
 import { GameConstants } from '@/main/constants/game-constants';
 import { Server } from 'socket.io';
+import { vi, describe, it, expect } from 'vitest';
 
 const makeSut = async () => {
   const moduleRef = await Test.createTestingModule({
     providers: [
       GameService,
+      WordsService,
       { provide: InMemoryMatchRepository, useClass: InMemoryMatchRepository },
       MatchMakingService,
     ],
   }).compile();
 
   const gameService = moduleRef.get<GameService>(GameService);
-
+  const wordsService = moduleRef.get<WordsService>(WordsService);
   const sut = moduleRef.get<MatchMakingService>(MatchMakingService);
 
-  return { sut, gameService };
+  return { sut, gameService, wordsService };
 };
 
 const makeServerMock = (): Server =>
   ({
     sockets: {
       sockets: {
-        get: vitest.fn().mockReturnValue({ join: vitest.fn() }),
+        get: vi.fn().mockReturnValue({ join: vi.fn() }),
+      },
+      adapter: {
+        rooms: new Map<string, Set<string>>(),
       },
     },
-    to: vitest.fn().mockReturnValue({ emit: vitest.fn() }),
+    to: vi.fn().mockReturnThis(),
+    emit: vi.fn(),
   }) as any;
 
-describe('Match Making Service', () => {
+describe('MatchMakingService', () => {
   describe('handle', () => {
     it('Should start a match if there is a match available', async () => {
-      const { sut, gameService } = await makeSut();
+      const { sut, gameService, wordsService } = await makeSut();
 
-      const playerOne = { id: 'player1' };
-      const playerTwo = { id: 'player2' };
+      const playerOne = { id: 'player-one' };
+      const playerTwo = { id: 'player-two' };
       const roomId = `match:${playerOne.id}-${playerTwo.id}`;
+      const randomWords = ['words-one', 'word-two'];
 
-      vitest
-        .spyOn(gameService, 'tryMatch')
-        .mockReturnValue([playerOne, playerTwo]);
+      vi.spyOn(gameService, 'tryMatch').mockReturnValue([playerOne, playerTwo]);
+      vi.spyOn(wordsService, 'generateRandomWord').mockResolvedValue(
+        randomWords,
+      );
 
       const server = makeServerMock();
+      server.sockets.adapter.rooms.set(
+        roomId,
+        new Set([playerOne.id, playerTwo.id]),
+      );
 
-      sut.handle(server);
+      await sut.handle(server);
 
       expect(server.sockets.sockets.get).toHaveBeenCalledWith(playerOne.id);
       expect(server.sockets.sockets.get).toHaveBeenCalledWith(playerTwo.id);
       expect(server.to).toHaveBeenCalledWith(roomId);
       expect(server.to(roomId).emit).toHaveBeenCalledWith(
         GameConstants.client.matchStart,
+        randomWords,
       );
     });
 
     it('Should not start a match if there is no match available', async () => {
       const { sut, gameService } = await makeSut();
 
-      vitest.spyOn(gameService, 'tryMatch').mockReturnValue(undefined);
+      vi.spyOn(gameService, 'tryMatch').mockReturnValue(undefined);
 
       const server = makeServerMock();
 
-      sut.handle(server);
+      await sut.handle(server);
+
+      expect(server.sockets.sockets.get).not.toHaveBeenCalled();
+      expect(server.to).not.toHaveBeenCalled();
+    });
+
+    it('Should not start a match if wordsService returns undefined', async () => {
+      const { sut, gameService, wordsService } = await makeSut();
+
+      const playerOne = { id: 'player-one' };
+      const playerTwo = { id: 'player-two' };
+
+      vi.spyOn(gameService, 'tryMatch').mockReturnValue([playerOne, playerTwo]);
+      vi.spyOn(wordsService, 'generateRandomWord').mockResolvedValue(undefined);
+
+      const server = makeServerMock();
+
+      await sut.handle(server);
 
       expect(server.sockets.sockets.get).not.toHaveBeenCalled();
       expect(server.to).not.toHaveBeenCalled();
@@ -77,15 +108,19 @@ describe('Match Making Service', () => {
 
       vi.useFakeTimers();
 
-      const playerOne = { id: 'player1' };
-      const playerTwo = { id: 'player2' };
+      const playerOne = { id: 'player-one' };
+      const playerTwo = { id: 'player-two' };
       const roomId = `match:${playerOne.id}-${playerTwo.id}`;
 
       const server = makeServerMock();
+      server.sockets.adapter.rooms.set(
+        roomId,
+        new Set([playerOne.id, playerTwo.id]),
+      );
 
-      const stopMatchSpy = vitest.spyOn(sut, 'stopMatch');
+      const stopMatchSpy = vi.spyOn(sut, 'stopMatch');
 
-      sut['startMatch'](server, roomId, 1);
+      sut.startMatch(server, roomId, 1);
 
       vi.runAllTimers();
 
@@ -95,6 +130,7 @@ describe('Match Making Service', () => {
         GameConstants.client.matchTimer,
         1,
       );
+
       expect(server.to(roomId).emit).toHaveBeenCalledWith(
         GameConstants.client.matchStop,
       );
@@ -105,26 +141,97 @@ describe('Match Making Service', () => {
 
       vi.useFakeTimers();
 
-      const playerOne = { id: 'player1' };
-      const playerTwo = { id: 'player2' };
+      const playerOne = { id: 'player-one' };
+      const playerTwo = { id: 'player-two' };
       const roomId = `match:${playerOne.id}-${playerTwo.id}`;
 
       const server = makeServerMock();
+      server.sockets.adapter.rooms.set(
+        roomId,
+        new Set([playerOne.id, playerTwo.id]),
+      );
 
-      sut['startMatch'](server, roomId, 1);
+      sut.startMatch(server, roomId, 2);
 
       vi.advanceTimersByTime(1000);
-
+      expect(server.to(roomId).emit).toHaveBeenCalledWith(
+        GameConstants.client.matchTimer,
+        2,
+      );
+      vi.advanceTimersByTime(1000);
       expect(server.to(roomId).emit).toHaveBeenCalledWith(
         GameConstants.client.matchTimer,
         1,
       );
-
       vi.advanceTimersByTime(1000);
 
       expect(server.to(roomId).emit).toHaveBeenCalledWith(
         GameConstants.client.matchStop,
       );
+    });
+
+    it('Should stop match if there are less than two players in the room', async () => {
+      const { sut } = await makeSut();
+
+      vi.useFakeTimers();
+
+      const playerOne = { id: 'player-one' };
+      const roomId = `match:${playerOne.id}-player-two`;
+
+      const server = makeServerMock();
+      server.sockets.adapter.rooms.set(roomId, new Set([playerOne.id]));
+
+      const stopMatchSpy = vi.spyOn(sut, 'stopMatch');
+
+      sut.startMatch(server, roomId, 2);
+
+      vi.advanceTimersByTime(1000);
+
+      expect(stopMatchSpy).toHaveBeenCalledWith(server, roomId);
+      expect(server.to(roomId).emit).not.toHaveBeenCalledWith(
+        GameConstants.client.matchTimer,
+        1,
+      );
+      expect(server.to(roomId).emit).toHaveBeenCalledWith(
+        GameConstants.client.matchStop,
+      );
+    });
+  });
+
+  describe('haveTwoPlayersInTheRoom', () => {
+    it('Should return true if there are two players in the room', async () => {
+      const { sut } = await makeSut();
+
+      const playerOne = { id: 'player-one' };
+      const playerTwo = { id: 'player-two' };
+      const roomId = `match:${playerOne.id}-${playerTwo.id}`;
+
+      const server = makeServerMock();
+      server.sockets.adapter.rooms.set(
+        roomId,
+        new Set([playerOne.id, playerTwo.id]),
+      );
+
+      const result = sut['haveTwoPlayersInTheRoom'](server, roomId);
+
+      expect(result).toBe(true);
+    });
+
+    it('Should return false and call stopMatch if there are less than two players in the room', async () => {
+      const { sut } = await makeSut();
+
+      const playerOne = { id: 'player-one' };
+      const roomId = `match:${playerOne.id}-player-two`;
+
+      const server = makeServerMock();
+      server.sockets.adapter.rooms.set(roomId, new Set([playerOne.id]));
+
+      const stopMatchSpy = vi.spyOn(sut, 'stopMatch');
+
+      const result = sut['haveTwoPlayersInTheRoom'](server, roomId);
+
+      expect(result).toBe(false);
+      expect(stopMatchSpy).toHaveBeenCalledWith(server, roomId);
     });
   });
 });
