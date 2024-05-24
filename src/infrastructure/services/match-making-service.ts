@@ -38,11 +38,29 @@ export class MatchMakingService implements IMatchMakingService {
       return;
     }
 
+    const twoPlayersInTheRoom = this.haveTwoPlayersInTheRoom(server, roomId);
+
+    if (!twoPlayersInTheRoom) {
+      return;
+    }
+
     server.to(roomId).emit(GameConstants.client.matchTimer, time);
 
     setTimeout(() => {
       this.startMatch(server, roomId, time - 1);
     }, 1000);
+  }
+
+  private haveTwoPlayersInTheRoom(server: Server, roomId: string) {
+    const playersInTheRoom = server.sockets.adapter.rooms.get(roomId).size;
+
+    if (playersInTheRoom === 2) {
+      return true;
+    }
+
+    this.stopMatch(server, roomId);
+
+    return false;
   }
 
   stopMatch(server: Server, roomId: string): void {

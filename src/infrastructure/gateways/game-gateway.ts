@@ -35,8 +35,9 @@ export class GameGateway implements IGameGateway {
   handleConnection(client: Socket) {
     const { sockets } = this.server.sockets;
 
-    this.logger.debug(`Number of connected clients: ${sockets.size}`);
     this.logger.log(`Client id: ${client.id} connected`);
+
+    this.logger.debug(`Number of connected clients: ${sockets.size}`);
   }
 
   handleDisconnect(client: Socket) {
