@@ -4,16 +4,22 @@ import { GameConstants } from '@/main/constants/game-constants';
 import { Server } from 'socket.io';
 
 import { GameService } from './game-service';
+import { WordsService } from './words-service';
 
 export interface IMatchMakingService {
   handle(server: Server): void;
+  startMatch(server: Server, roomId: string, time: number): void;
+  stopMatch(server: Server, roomId: string): void;
 }
 
 @Injectable()
 export class MatchMakingService implements IMatchMakingService {
-  constructor(private readonly gameService: GameService) {}
+  constructor(
+    private readonly gameService: GameService,
+    private readonly wordsService: WordsService,
+  ) {}
 
-  public handle(server: Server): void {
+  public async handle(server: Server): Promise<void> {
     const isMatch = this.gameService.tryMatch();
 
     if (!isMatch) {
@@ -24,10 +30,16 @@ export class MatchMakingService implements IMatchMakingService {
 
     const roomId = `match:${playerOne.id}-${playerTwo.id}`;
 
+    const randomWords = await this.wordsService.generateRandomWord();
+
+    if (!randomWords) {
+      return;
+    }
+
     server.sockets.sockets.get(playerOne.id).join(roomId);
     server.sockets.sockets.get(playerTwo.id).join(roomId);
 
-    server.to(roomId).emit(GameConstants.client.matchStart);
+    server.to(roomId).emit(GameConstants.client.matchStart, randomWords);
 
     this.startMatch(server, roomId, 30);
   }

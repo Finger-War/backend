@@ -6,6 +6,7 @@ import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-u
 import { GameGateway } from '@/infrastructure/gateways/game-gateway';
 import { GameService } from '@/infrastructure/services/game-service';
 import { MatchMakingService } from '@/infrastructure/services/match-making-service';
+import { WordsService } from '@/infrastructure/services/words-service';
 
 @Module({
   imports: [],
@@ -15,6 +16,7 @@ import { MatchMakingService } from '@/infrastructure/services/match-making-servi
     HandleWordUseCase,
     MatchMakingService,
     GameService,
+    WordsService,
     GameGateway,
   ],
 })
