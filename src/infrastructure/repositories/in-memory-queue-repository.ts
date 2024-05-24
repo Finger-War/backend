@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
 import { Player } from '@/domain/entities/player';
+import { Queue } from '@/domain/entities/queue';
 
-export interface IGameService {
+export interface IInMemoryQueueRepository {
   joinQueue(playerId: string): void;
   getOutQueue(playerId: string): void;
   getPlayer(playerId: string): Player | null;
@@ -10,8 +11,8 @@ export interface IGameService {
 }
 
 @Injectable()
-export class GameService implements IGameService {
-  private queue: Player[] = [];
+export class InMemoryQueueRepository implements IInMemoryQueueRepository {
+  private queue: Queue[] = [];
 
   joinQueue(playerId: string): void {
     const player = { id: playerId };

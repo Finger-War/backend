@@ -4,18 +4,20 @@ import { GetOutQueueUseCase } from '@/application/usecases/get-out-queue-usecase
 import { HandleWordUseCase } from '@/application/usecases/handle-word-usecase';
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
 import { GameGateway } from '@/infrastructure/gateways/game-gateway';
-import { GameService } from '@/infrastructure/services/game-service';
+import { InMemoryMatchRepository } from '@/infrastructure/repositories/in-memory-match-repository';
+import { InMemoryQueueRepository } from '@/infrastructure/repositories/in-memory-queue-repository';
 import { MatchMakingService } from '@/infrastructure/services/match-making-service';
 import { WordsService } from '@/infrastructure/services/words-service';
 
 @Module({
   imports: [],
   providers: [
+    InMemoryQueueRepository,
+    InMemoryMatchRepository,
     JoingGameQueueUseCase,
     GetOutQueueUseCase,
     HandleWordUseCase,
     MatchMakingService,
-    GameService,
     WordsService,
     GameGateway,
   ],

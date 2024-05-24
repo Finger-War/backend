@@ -1,19 +1,22 @@
 import { Injectable } from '@nestjs/common';
 
 import { JoinGameQueue } from '@/domain/usecases/join-game-queue-usecase';
-import { GameService } from '@/infrastructure/services/game-service';
+import { InMemoryQueueRepository } from '@/infrastructure/repositories/in-memory-queue-repository';
 
 @Injectable()
 export class JoingGameQueueUseCase implements JoinGameQueue {
-  constructor(private readonly gameService: GameService) {}
+  constructor(
+    private readonly inMemoryQueueRepository: InMemoryQueueRepository,
+  ) {}
 
   execute(playerId: string) {
-    const playerAlreadyExistsInQueue = this.gameService.getPlayer(playerId);
+    const playerAlreadyExistsInQueue =
+      this.inMemoryQueueRepository.getPlayer(playerId);
 
     if (playerAlreadyExistsInQueue) {
       return;
     }
 
-    this.gameService.joinQueue(playerId);
+    this.inMemoryQueueRepository.joinQueue(playerId);
   }
 }

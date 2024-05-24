@@ -1,19 +1,19 @@
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
-import { GameService } from '@/infrastructure/services/game-service';
+import { InMemoryQueueRepository } from '@/infrastructure/repositories/in-memory-queue-repository';
 
 const makeSut = () => {
-  const gameService = new GameService();
-  const sut = new JoingGameQueueUseCase(gameService);
+  const inMemoryQueueRepository = new InMemoryQueueRepository();
+  const sut = new JoingGameQueueUseCase(inMemoryQueueRepository);
 
-  return { sut, gameService };
+  return { sut, inMemoryQueueRepository };
 };
 
 describe('Join Game Queue Use Case', () => {
   it('Should not add player to the game queue if player already exists', () => {
-    const { sut, gameService } = makeSut();
+    const { sut, inMemoryQueueRepository } = makeSut();
 
     const playerId = '1';
-    gameService.joinQueue(playerId);
+    inMemoryQueueRepository.joinQueue(playerId);
 
     sut.execute(playerId);
 
@@ -21,12 +21,12 @@ describe('Join Game Queue Use Case', () => {
   });
 
   it('Should add player to the game queue if player does not already exist', () => {
-    const { sut, gameService } = makeSut();
+    const { sut, inMemoryQueueRepository } = makeSut();
 
     const playerId = '1';
 
     sut.execute(playerId);
 
-    expect(gameService.getPlayer(playerId)).toBeDefined();
+    expect(inMemoryQueueRepository.getPlayer(playerId)).toBeDefined();
   });
 });

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
+import { InMemoryQueueRepository } from '@/infrastructure/repositories/in-memory-queue-repository';
 import { GameConstants } from '@/main/constants/game-constants';
 import { Server } from 'socket.io';
 
-import { GameService } from './game-service';
 import { WordsService } from './words-service';
 
 export interface IMatchMakingService {
@@ -15,12 +15,12 @@ export interface IMatchMakingService {
 @Injectable()
 export class MatchMakingService implements IMatchMakingService {
   constructor(
-    private readonly gameService: GameService,
+    private readonly inMemoryQueueRepository: InMemoryQueueRepository,
     private readonly wordsService: WordsService,
   ) {}
 
   public async handle(server: Server): Promise<void> {
-    const isMatch = this.gameService.tryMatch();
+    const isMatch = this.inMemoryQueueRepository.tryMatch();
 
     if (!isMatch) {
       return;

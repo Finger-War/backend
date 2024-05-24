@@ -1,11 +1,11 @@
 import { GetOutQueueUseCase } from '@/application/usecases/get-out-queue-usecase';
-import { GameService } from '@/infrastructure/services/game-service';
+import { InMemoryQueueRepository } from '@/infrastructure/repositories/in-memory-queue-repository';
 
 const makeSut = () => {
-  const gameService = new GameService();
-  const sut = new GetOutQueueUseCase(gameService);
+  const inMemoryQueueRepository = new InMemoryQueueRepository();
+  const sut = new GetOutQueueUseCase(inMemoryQueueRepository);
 
-  return { sut, gameService };
+  return { sut, inMemoryQueueRepository };
 };
 
 describe('Get Out Queue Use Case', () => {
@@ -18,13 +18,13 @@ describe('Get Out Queue Use Case', () => {
   });
 
   it('Should remove player from the game queue if player exist', () => {
-    const { sut, gameService } = makeSut();
+    const { sut, inMemoryQueueRepository } = makeSut();
 
     const playerId = '1';
-    gameService.joinQueue(playerId);
+    inMemoryQueueRepository.joinQueue(playerId);
 
     sut.execute(playerId);
 
-    expect(gameService.getPlayer(playerId)).toBeDefined();
+    expect(inMemoryQueueRepository.getPlayer(playerId)).toBeDefined();
   });
 });

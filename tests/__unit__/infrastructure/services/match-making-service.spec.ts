@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import { InMemoryMatchRepository } from '@/infrastructure/repositories/in-memory-match-repository';
-import { GameService } from '@/infrastructure/services/game-service';
+import { InMemoryQueueRepository } from '@/infrastructure/repositories/in-memory-queue-repository';
 import { MatchMakingService } from '@/infrastructure/services/match-making-service';
 import { WordsService } from '@/infrastructure/services/words-service';
 import { GameConstants } from '@/main/constants/game-constants';
@@ -11,18 +11,20 @@ import { vi, describe, it, expect } from 'vitest';
 const makeSut = async () => {
   const moduleRef = await Test.createTestingModule({
     providers: [
-      GameService,
+      InMemoryQueueRepository,
       WordsService,
       { provide: InMemoryMatchRepository, useClass: InMemoryMatchRepository },
       MatchMakingService,
     ],
   }).compile();
 
-  const gameService = moduleRef.get<GameService>(GameService);
+  const inMemoryQueueRepository = moduleRef.get<InMemoryQueueRepository>(
+    InMemoryQueueRepository,
+  );
   const wordsService = moduleRef.get<WordsService>(WordsService);
   const sut = moduleRef.get<MatchMakingService>(MatchMakingService);
 
-  return { sut, gameService, wordsService };
+  return { sut, inMemoryQueueRepository, wordsService };
 };
 
 const makeServerMock = (): Server =>
@@ -42,14 +44,17 @@ const makeServerMock = (): Server =>
 describe('MatchMakingService', () => {
   describe('handle', () => {
     it('Should start a match if there is a match available', async () => {
-      const { sut, gameService, wordsService } = await makeSut();
+      const { sut, inMemoryQueueRepository, wordsService } = await makeSut();
 
       const playerOne = { id: 'player-one' };
       const playerTwo = { id: 'player-two' };
       const roomId = `match:${playerOne.id}-${playerTwo.id}`;
       const randomWords = ['words-one', 'word-two'];
 
-      vi.spyOn(gameService, 'tryMatch').mockReturnValue([playerOne, playerTwo]);
+      vi.spyOn(inMemoryQueueRepository, 'tryMatch').mockReturnValue([
+        playerOne,
+        playerTwo,
+      ]);
       vi.spyOn(wordsService, 'generateRandomWord').mockResolvedValue(
         randomWords,
       );
@@ -72,9 +77,9 @@ describe('MatchMakingService', () => {
     });
 
     it('Should not start a match if there is no match available', async () => {
-      const { sut, gameService } = await makeSut();
+      const { sut, inMemoryQueueRepository } = await makeSut();
 
-      vi.spyOn(gameService, 'tryMatch').mockReturnValue(undefined);
+      vi.spyOn(inMemoryQueueRepository, 'tryMatch').mockReturnValue(undefined);
 
       const server = makeServerMock();
 
@@ -85,12 +90,15 @@ describe('MatchMakingService', () => {
     });
 
     it('Should not start a match if wordsService returns undefined', async () => {
-      const { sut, gameService, wordsService } = await makeSut();
+      const { sut, inMemoryQueueRepository, wordsService } = await makeSut();
 
       const playerOne = { id: 'player-one' };
       const playerTwo = { id: 'player-two' };
 
-      vi.spyOn(gameService, 'tryMatch').mockReturnValue([playerOne, playerTwo]);
+      vi.spyOn(inMemoryQueueRepository, 'tryMatch').mockReturnValue([
+        playerOne,
+        playerTwo,
+      ]);
       vi.spyOn(wordsService, 'generateRandomWord').mockResolvedValue(undefined);
 
       const server = makeServerMock();
