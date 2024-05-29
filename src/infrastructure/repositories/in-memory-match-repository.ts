@@ -6,28 +6,34 @@ export interface IMatchRepository {
   add(match: Match): void;
   findById(id: string): Match | null;
   findByPlayerId(playerId: string): Match | null;
-  remove(match: Match): void;
+  remove(matchId: string): void;
 }
 
 @Injectable()
 export class InMemoryMatchRepository implements IMatchRepository {
-  private match: Match[] = [];
+  private match: Record<string, Match> = {};
 
   add(match: Match): void {
-    this.match.push(match);
+    this.match[match.id] = match;
   }
 
   findById(id: string): Match | null {
-    return this.match.find((match) => match.id === id);
+    return this.match[id] || null;
   }
 
   findByPlayerId(playerId: string): Match | null {
-    return this.match.find((match) =>
-      match.players.some((player) => player.id === playerId),
+    return (
+      Object.values(this.match).find((match) => {
+        return Object.keys(match.players).includes(playerId);
+      }) || null
     );
   }
 
-  remove(match: Match): void {
-    this.match = this.match.filter((g) => g.id !== match.id);
+  addCorrectWord(matchId: string, playerId: string, word: string): void {
+    this.match[matchId].players[playerId].words.push(word);
+  }
+
+  remove(matchId: string): void {
+    delete this.match[matchId];
   }
 }

@@ -12,8 +12,8 @@ const makeSut = async () => {
   const moduleRef = await Test.createTestingModule({
     providers: [
       InMemoryQueueRepository,
+      InMemoryMatchRepository,
       WordsService,
-      { provide: InMemoryMatchRepository, useClass: InMemoryMatchRepository },
       MatchMakingService,
     ],
   }).compile();
@@ -21,10 +21,18 @@ const makeSut = async () => {
   const inMemoryQueueRepository = moduleRef.get<InMemoryQueueRepository>(
     InMemoryQueueRepository,
   );
+  const inMemoryMatchRepository = moduleRef.get<InMemoryMatchRepository>(
+    InMemoryMatchRepository,
+  );
   const wordsService = moduleRef.get<WordsService>(WordsService);
   const sut = moduleRef.get<MatchMakingService>(MatchMakingService);
 
-  return { sut, inMemoryQueueRepository, wordsService };
+  return {
+    sut,
+    inMemoryQueueRepository,
+    inMemoryMatchRepository,
+    wordsService,
+  };
 };
 
 const makeServerMock = (): Server =>

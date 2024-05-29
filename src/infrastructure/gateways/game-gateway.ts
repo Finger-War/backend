@@ -6,6 +6,7 @@ import {
 } from '@nestjs/websockets';
 
 import { GetOutQueueUseCase } from '@/application/usecases/get-out-queue-usecase';
+import { HandleCorrectWordUseCase } from '@/application/usecases/handle-correct-word';
 import { HandleWordUseCase } from '@/application/usecases/handle-word-usecase';
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
 import { MatchMakingService } from '@/infrastructure/services/match-making-service';
@@ -29,6 +30,7 @@ export class GameGateway implements IGameGateway {
     private readonly joinGameQueueUseCase: JoingGameQueueUseCase,
     private readonly getOutQueueUseCase: GetOutQueueUseCase,
     private readonly handleWordUseCase: HandleWordUseCase,
+    private readonly handleCorrectUseCase: HandleCorrectWordUseCase,
     private readonly matchMakingService: MatchMakingService,
   ) {}
 
@@ -67,5 +69,10 @@ export class GameGateway implements IGameGateway {
   @SubscribeMessage(GameConstants.server.handleWord)
   handleWord(client: Socket, word: string): void {
     this.handleWordUseCase.execute(this.server, client, word);
+  }
+
+  @SubscribeMessage(GameConstants.server.handleCorrectWord)
+  handleCorrectWord(client: Socket, word: string) {
+    this.handleCorrectUseCase.execute(client, word);
   }
 }

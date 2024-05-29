@@ -18,7 +18,7 @@ describe('In Memory Match Repository', () => {
     it('Should add a match to the repository', async () => {
       const { sut } = await makeSut();
 
-      const match = { id: '1', players: [] } as Match;
+      const match = { id: '1', players: {}, randomWords: [] } as Match;
 
       sut.add(match);
 
@@ -38,9 +38,9 @@ describe('In Memory Match Repository', () => {
     it('Should return the match with the specified id', async () => {
       const { sut } = await makeSut();
 
-      const match = { id: '1', players: [] } as Match;
+      const match = { id: '1', players: {}, randomWords: [] } as Match;
 
-      sut['match'] = [match];
+      sut.add(match);
 
       const result = sut.findById('1');
 
@@ -62,10 +62,10 @@ describe('In Memory Match Repository', () => {
     it('Should remove the match from the repository', async () => {
       const { sut } = await makeSut();
 
-      const match = { id: '1', players: [] } as Match;
-      sut['match'] = [match];
+      const match = { id: '1', players: {}, randomWords: [] } as Match;
+      sut.add(match);
 
-      sut.remove(match);
+      sut.remove(match.id);
 
       expect(sut['match']).not.toContain(match);
     });

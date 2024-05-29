@@ -13,6 +13,10 @@ export class WordsService implements IWordsService {
       `${this.baseUrl}/api/rest_v1/page/random/summary`,
     ).then((response) => response.json());
 
+    if (!randomSummary) {
+      return;
+    }
+
     const { pageid } = randomSummary;
 
     const randomWords = await fetch(
@@ -25,6 +29,10 @@ export class WordsService implements IWordsService {
         },
       },
     ).then((response) => response.json());
+
+    if (!randomWords) {
+      return;
+    }
 
     const text = randomWords.query.pages[pageid].extract;
 

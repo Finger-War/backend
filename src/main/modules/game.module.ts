@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { GetOutQueueUseCase } from '@/application/usecases/get-out-queue-usecase';
+import { HandleCorrectWordUseCase } from '@/application/usecases/handle-correct-word';
 import { HandleWordUseCase } from '@/application/usecases/handle-word-usecase';
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
 import { GameGateway } from '@/infrastructure/gateways/game-gateway';
@@ -17,6 +18,7 @@ import { WordsService } from '@/infrastructure/services/words-service';
     JoingGameQueueUseCase,
     GetOutQueueUseCase,
     HandleWordUseCase,
+    HandleCorrectWordUseCase,
     MatchMakingService,
     WordsService,
     GameGateway,
