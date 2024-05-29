@@ -1,7 +1,7 @@
 pre-push:
    commands:
     test:
-      run: npm run test
+      run: npm run test:unit
 
 pre-commit:
   commands:
