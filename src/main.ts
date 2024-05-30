@@ -6,7 +6,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 
-import { SocketIoAdapter } from '@/main/adapters/socket-io-adapter';
+import { SocketIoAdapter } from '@/infrastructure/adapters/socket-io-adapter';
 
 import { AppModule } from './app.module';
 
