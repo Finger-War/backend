@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { WsException } from '@nestjs/websockets';
 
 import { HandleWord } from '@/domain/usecases/handle-word-usecase';
 import { GameConstants } from '@/main/constants/game-constants';
@@ -12,7 +13,7 @@ export class HandleWordUseCase implements HandleWord {
     );
 
     if (!roomId) {
-      return;
+      throw new WsException('Player not in a match');
     }
 
     const adversary = Array.from(server.sockets.adapter.rooms.get(roomId)).find(
@@ -20,7 +21,7 @@ export class HandleWordUseCase implements HandleWord {
     );
 
     if (!adversary) {
-      return;
+      throw new WsException('Adversary not found in match');
     }
 
     client.to(adversary).emit(GameConstants.client.adversaryWords, word);

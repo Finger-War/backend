@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { WsException } from '@nestjs/websockets';
 
 import { GetOutQueue } from '@/domain/usecases/get-out-queue-usecase';
 import { InMemoryQueueRepository } from '@/infrastructure/repositories/in-memory-queue-repository';
@@ -14,7 +15,7 @@ export class GetOutQueueUseCase implements GetOutQueue {
       this.inMemoryQueueRepository.getPlayer(playerId);
 
     if (!playerExistsInQueue) {
-      return;
+      throw new WsException('Player not in queue');
     }
 
     this.inMemoryQueueRepository.getOutQueue(playerId);
