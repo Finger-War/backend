@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 
 import { GetOutQueueUseCase } from '@/application/usecases/get-out-queue-usecase';
@@ -11,7 +12,7 @@ import { WordsService } from '@/infrastructure/services/words-service';
 import { GameGateway } from '@/presentation/gateways/game-gateway';
 
 @Module({
-  imports: [],
+  imports: [HttpModule],
   providers: [
     InMemoryQueueRepository,
     InMemoryMatchRepository,
