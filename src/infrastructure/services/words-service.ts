@@ -20,7 +20,7 @@ export class WordsService implements IWordsService {
     const randomWords = await this.fetchRandomWords(pageid);
     const text = randomWords.query.pages[pageid].extract;
 
-    return this.extractRandomWords(text, 10);
+    return this.extractRandomWords(text);
   }
 
   private async fetchRandomSummary(): Promise<any> {
@@ -46,26 +46,26 @@ export class WordsService implements IWordsService {
     return data;
   }
 
-  private extractRandomWords(text: string, count: number): string[] {
-    const textInOneParagraph = text.replace(/<\/p><p>+/g, ' ');
-    const textWithoutReferenceLinks = textInOneParagraph.replace(
-      /\[\d+\]/gi,
+  private extractRandomWords(text: string): string[] {
+    const textWithoutHtmlTags = text.replace(/<\/?[^>]+(>|$)/g, ' ');
+    const textWithoutHtmlEntities = textWithoutHtmlTags.replace(
+      /&[a-z]+;/gi,
       '',
     );
-    const textWithoutInvisibleCharacters = textWithoutReferenceLinks.replace(
-      /[\u200B-\u200D\uFEFF]/g,
+    const textWithoutPunctuation = textWithoutHtmlEntities.replace(
+      /[^\w\s]|_/gi,
       '',
     );
-    const textWithoutWhiteSpace = textWithoutInvisibleCharacters.replace(
-      /\s+/g,
-      ' ',
-    );
-    const textTrimmed = textWithoutWhiteSpace.trim();
-    const array = textTrimmed.split(' ');
+    const textWithoutNumbers = textWithoutPunctuation.replace(/\d+/g, '');
+    const textWithoutMultipleSpaces = textWithoutNumbers.replace(/\s+/g, ' ');
 
-    return Array.from(
-      { length: count },
-      () => array[Math.floor(Math.random() * array.length)],
+    const arrayWords = textWithoutMultipleSpaces.split(' ');
+
+    const randomWords = Array.from(
+      { length: arrayWords.length },
+      () => arrayWords[Math.floor(Math.random() * arrayWords.length)],
     );
+
+    return randomWords;
   }
 }
