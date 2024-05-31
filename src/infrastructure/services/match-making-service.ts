@@ -37,7 +37,11 @@ export class MatchMakingService implements IMatchMakingService {
 
     const roomId = `match:${playerOne.id}-${playerTwo.id}`;
 
-    const randomWords = await this.wordsService.generateRandomWords();
+    const randomWords = await this.wordsService
+      .generateRandomWords()
+      .catch(() => {
+        return [];
+      });
 
     if (!randomWords) {
       return;
