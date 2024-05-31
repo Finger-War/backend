@@ -6,7 +6,8 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 
-import { SocketIoAdapter } from '@/main/adapters/socket-io-adapter';
+import { SocketIoAdapter } from '@/infrastructure/adapters/socket-io-adapter';
+import { WsExceptionFilter } from '@/presentation/filters/ws-exception-filter';
 
 import { AppModule } from './app.module';
 
@@ -16,6 +17,7 @@ async function bootstrap() {
     new FastifyAdapter(),
   );
 
+  app.useGlobalFilters(new WsExceptionFilter());
   app.useWebSocketAdapter(new SocketIoAdapter(app));
 
   const configService = app.get(ConfigService);
