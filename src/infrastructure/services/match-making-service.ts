@@ -22,7 +22,7 @@ export class MatchMakingService implements IMatchMakingService {
     private readonly wordsService: WordsService,
   ) {}
 
-  async handle(server: Server): Promise<void> {
+  async handle(server: Server) {
     const isMatch = this.inMemoryQueueRepository.tryMatch();
 
     if (!isMatch) {

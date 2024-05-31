@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UseFilters } from '@nestjs/common';
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -6,12 +6,13 @@ import {
 } from '@nestjs/websockets';
 
 import { GetOutQueueUseCase } from '@/application/usecases/get-out-queue-usecase';
-import { HandleCorrectWordUseCase } from '@/application/usecases/handle-correct-word';
+import { HandleCorrectWordUseCase } from '@/application/usecases/handle-correct-word-usecase';
 import { HandleWordUseCase } from '@/application/usecases/handle-word-usecase';
 import { JoingGameQueueUseCase } from '@/application/usecases/joing-game-queue-usecase';
 import { MatchMakingService } from '@/infrastructure/services/match-making-service';
 import { envs } from '@/main/config/envs';
 import { GameConstants } from '@/main/constants/game-constants';
+import { WsExceptionFilter } from '@/presentation/filters/ws-exception-filter';
 import { Server, Socket } from 'socket.io';
 
 export interface IGameGateway {
@@ -20,6 +21,7 @@ export interface IGameGateway {
 }
 
 @WebSocketGateway({ cors: true, port: envs.CONTAINER_PORT })
+@UseFilters(new WsExceptionFilter())
 export class GameGateway implements IGameGateway {
   @WebSocketServer()
   private server: Server;

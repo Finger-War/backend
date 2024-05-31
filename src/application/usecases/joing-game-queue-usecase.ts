@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { WsException } from '@nestjs/websockets';
 
 import { JoinGameQueue } from '@/domain/usecases/join-game-queue-usecase';
 import { InMemoryQueueRepository } from '@/infrastructure/repositories/in-memory-queue-repository';
@@ -14,7 +15,7 @@ export class JoingGameQueueUseCase implements JoinGameQueue {
       this.inMemoryQueueRepository.getPlayer(playerId);
 
     if (playerAlreadyExistsInQueue) {
-      return;
+      throw new WsException('Player already in queue');
     }
 
     this.inMemoryQueueRepository.joinQueue(playerId);
