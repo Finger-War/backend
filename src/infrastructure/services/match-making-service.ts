@@ -187,5 +187,7 @@ export class MatchMakingService implements IMatchMakingService {
     this.inMemoryMatchRepository.remove(roomId);
 
     server.to(roomId).emit(GameConstants.client.matchStop);
+
+    server.socketsLeave(roomId);
   }
 }

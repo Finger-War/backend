@@ -88,7 +88,7 @@ export class GameGateway implements IGameGateway {
       return;
     }
 
-    this.logger.log(`Client id: ${client.id} stopped`);
+    this.logger.log(`Match Id: ${matchId} stopped`);
 
     this.matchMakingService.stopMatch(this.server, matchId);
   }
