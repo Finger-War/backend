@@ -51,44 +51,74 @@ export class MatchMakingService implements IMatchMakingService {
       { [playerTwo.id]: { ...playerTwo, words: [] } },
     ) as Record<string, Player>;
 
+    const playerOneSocket = server.sockets.sockets.get(playerOne.id);
+    const playerTwoSocket = server.sockets.sockets.get(playerTwo.id);
+
+    if (!playerOneSocket || !playerTwoSocket) {
+      return;
+    }
+
+    playerOneSocket.join(roomId);
+    playerTwoSocket.join(roomId);
+
+    this.startMatch(server, roomId, 60, players, randomWords);
+  }
+
+  private startMatch(
+    server: Server,
+    roomId: string,
+    time: number,
+    players: Record<string, Player>,
+    randomWords: string[],
+  ): void {
     this.inMemoryMatchRepository.add({
       id: roomId,
       players,
       randomWords,
     });
 
-    server.sockets.sockets.get(playerOne.id).join(roomId);
-    server.sockets.sockets.get(playerTwo.id).join(roomId);
-
     server.to(roomId).emit(GameConstants.client.matchStart, randomWords);
 
-    this.startMatch(server, roomId, 1000);
+    this.match(server, roomId, time);
   }
 
-  private startMatch(server: Server, roomId: string, time: number): void {
+  private match(server: Server, roomId: string, time: number) {
     if (time === 0) {
-      this.generateMatchResult(server, roomId);
-      return;
+      return this.generateMatchResult(server, roomId);
     }
 
-    const twoPlayersInTheRoom = this.haveTwoPlayersInTheRoom(server, roomId);
+    const normalMatchRequirements = this.haveNormalMatchRequirements(
+      server,
+      roomId,
+    );
 
-    if (!twoPlayersInTheRoom) {
-      this.stopMatch(server, roomId);
-      return;
+    if (!normalMatchRequirements) {
+      return this.stopMatch(server, roomId);
     }
 
     server.to(roomId).emit(GameConstants.client.matchTimer, time);
 
     setTimeout(() => {
-      this.startMatch(server, roomId, time - 1);
+      return this.match(server, roomId, time - 1);
     }, 1000);
   }
 
-  private haveTwoPlayersInTheRoom(server: Server, roomId: string): boolean {
-    const match = server.sockets.adapter.rooms.get(roomId);
+  private haveNormalMatchRequirements(server: Server, roomId: string): boolean {
+    const haveMatch = this.inMemoryMatchRepository.findById(roomId);
 
-    if (!match || match.size !== 2) {
+    if (!haveMatch) {
+      return false;
+    }
+
+    const haveRoom = server.sockets.adapter.rooms.get(roomId);
+
+    if (!haveRoom) {
+      return false;
+    }
+
+    const havePlayers = haveRoom.size === 2;
+
+    if (!havePlayers) {
       return false;
     }
 
@@ -122,7 +152,8 @@ export class MatchMakingService implements IMatchMakingService {
           words: 0,
         },
       });
-      return;
+
+      return this.stopMatch(server, roomId);
     }
 
     Object.values(match.players).forEach((player) => {
@@ -147,9 +178,9 @@ export class MatchMakingService implements IMatchMakingService {
           words: resultWords,
         },
       });
-
-      this.stopMatch(server, roomId);
     });
+
+    return this.stopMatch(server, roomId);
   }
 
   stopMatch(server: Server, roomId: string): void {
