@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
-import { Player } from '@/domain/entities/player';
 import { Queue } from '@/domain/entities/queue';
 
 export interface IInMemoryQueueRepository {
   joinQueue(playerId: string): void;
   getOutQueue(playerId: string): void;
-  getPlayer(playerId: string): Player | null;
-  tryMatch(): Player[] | undefined;
+  getPlayer(playerId: string): Queue | null;
+  tryMatch(): Queue[] | undefined;
 }
 
 @Injectable()
@@ -24,7 +23,7 @@ export class InMemoryQueueRepository implements IInMemoryQueueRepository {
     this.queue = this.queue.filter((player) => player.id !== playerId);
   }
 
-  getPlayer(playerId: string): Player | null {
+  getPlayer(playerId: string): Queue | null {
     return this.queue.find((player) => player.id === playerId) ?? null;
   }
 
