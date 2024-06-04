@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { WsException } from '@nestjs/websockets';
 
 import { HandleWordUseCase } from '@/application/usecases/handle-word-usecase';
 import { GameConstants } from '@/main/constants/game-constants';
@@ -33,18 +34,16 @@ const makeServerMock = (): Server =>
   }) as unknown as Server;
 
 describe('Handle Word Use Case', () => {
-  it('Should not emit if client is not in a match room', async () => {
+  it('Should throw a Websockets Exception if client is not in a match room', async () => {
     const { sut } = await makeSut();
 
     const client = makeClientMock();
     const server = makeServerMock();
 
-    sut.execute(server, client, 'any_word');
-
-    expect(client.to).not.toHaveBeenCalled();
+    expect(() => sut.execute(server, client, 'any_word')).toThrow(WsException);
   });
 
-  it('Should not emit if there is no adversary in the room', async () => {
+  it('Should throw a Websockets Exception if there is no adversary in the room', async () => {
     const { sut } = await makeSut();
 
     const client = makeClientMock();
@@ -57,9 +56,7 @@ describe('Handle Word Use Case', () => {
       new Set<string>(['any_player_one']),
     );
 
-    sut.execute(server, client, 'any_word');
-
-    expect(client.to).not.toHaveBeenCalled();
+    expect(() => sut.execute(server, client, 'any_word')).toThrow(WsException);
   });
 
   it('Should emit the word to the adversary if both clients are in the match room', async () => {

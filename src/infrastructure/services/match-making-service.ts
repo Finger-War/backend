@@ -10,6 +10,13 @@ import { WordsService } from './words-service';
 
 export interface IMatchMakingService {
   handle(server: Server): void;
+  startMatch(
+    server: Server,
+    roomId: string,
+    time: number,
+    players: Record<string, Player>,
+    randomWords: string[],
+  ): void;
   stopMatch(server: Server, roomId: string): void;
 }
 
@@ -64,7 +71,7 @@ export class MatchMakingService implements IMatchMakingService {
     this.startMatch(server, roomId, 60, players, randomWords);
   }
 
-  private startMatch(
+  startMatch(
     server: Server,
     roomId: string,
     time: number,
