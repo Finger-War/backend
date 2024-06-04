@@ -5,13 +5,14 @@ export const GameConstants = {
     matchStop: 'match-stop',
     matchTimer: 'match-timer',
     matchResult: 'match-result',
-    matchError: 'match-error',
     adversaryWords: 'adversary-words',
+    serverError: 'server-error',
   },
   server: {
     joinQueue: 'join-queue',
     getOutQueue: 'get-out-queue',
     handleWord: 'handle-word',
     handleCorrectWord: 'handle-correct-word',
+    clientError: 'client-error',
   },
 };
