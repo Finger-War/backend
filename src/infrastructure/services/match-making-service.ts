@@ -10,7 +10,6 @@ import { WordsService } from './words-service';
 
 export interface IMatchMakingService {
   handle(server: Server): void;
-  startMatch(server: Server, roomId: string, time: number): void;
   stopMatch(server: Server, roomId: string): void;
 }
 
@@ -63,19 +62,19 @@ export class MatchMakingService implements IMatchMakingService {
 
     server.to(roomId).emit(GameConstants.client.matchStart, randomWords);
 
-    this.startMatch(server, roomId, 30);
+    this.startMatch(server, roomId, 1000);
   }
 
-  startMatch(server: Server, roomId: string, time: number): void {
+  private startMatch(server: Server, roomId: string, time: number): void {
     if (time === 0) {
       this.generateMatchResult(server, roomId);
-      this.stopMatch(server, roomId);
       return;
     }
 
     const twoPlayersInTheRoom = this.haveTwoPlayersInTheRoom(server, roomId);
 
     if (!twoPlayersInTheRoom) {
+      this.stopMatch(server, roomId);
       return;
     }
 
@@ -86,16 +85,14 @@ export class MatchMakingService implements IMatchMakingService {
     }, 1000);
   }
 
-  private haveTwoPlayersInTheRoom(server: Server, roomId: string) {
-    const playersInTheRoom = server.sockets.adapter.rooms.get(roomId).size;
+  private haveTwoPlayersInTheRoom(server: Server, roomId: string): boolean {
+    const match = server.sockets.adapter.rooms.get(roomId);
 
-    if (playersInTheRoom === 2) {
-      return true;
+    if (!match || match.size !== 2) {
+      return false;
     }
 
-    this.stopMatch(server, roomId);
-
-    return false;
+    return true;
   }
 
   private generateMatchResult(server: Server, roomId: string) {
@@ -150,6 +147,8 @@ export class MatchMakingService implements IMatchMakingService {
           words: resultWords,
         },
       });
+
+      this.stopMatch(server, roomId);
     });
   }
 

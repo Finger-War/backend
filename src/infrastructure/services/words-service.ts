@@ -14,13 +14,31 @@ export class WordsService implements IWordsService {
   constructor(private readonly httpService: HttpService) {}
 
   async generateRandomWords(): Promise<string[]> {
+    return this.fetchAccumulateWords([]);
+  }
+
+  private async fetchAccumulateWords(
+    accumulateWords: string[],
+  ): Promise<string[]> {
+    if (accumulateWords.length >= 200) {
+      return accumulateWords.slice(0, 200);
+    }
+
     const randomSummary = await this.fetchRandomSummary();
     const pageid = randomSummary.pageid;
 
     const randomWords = await this.fetchRandomWords(pageid);
     const text = randomWords.query.pages[pageid].extract;
 
-    return this.extractRandomWords(text);
+    const extractWords = this.extractRandomWords(text);
+
+    const newAccumateWords = accumulateWords.concat(extractWords);
+
+    if (newAccumateWords.length >= 200) {
+      return newAccumateWords.slice(0, 200);
+    }
+
+    return this.fetchAccumulateWords(newAccumateWords);
   }
 
   private async fetchRandomSummary(): Promise<any> {
