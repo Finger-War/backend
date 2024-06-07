@@ -15,6 +15,6 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
 
     this.logger.error(`Client id: ${client.id} - ${errorMessage}`);
 
-    client.emit(GameConstants.client.matchError, { errorMessage });
+    client.emit(GameConstants.client.serverError, { errorMessage });
   }
 }

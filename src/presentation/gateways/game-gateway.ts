@@ -77,4 +77,19 @@ export class GameGateway implements IGameGateway {
   handleCorrectWord(client: Socket, word: string) {
     this.handleCorrectUseCase.execute(client, word);
   }
+
+  @SubscribeMessage(GameConstants.server.clientError)
+  handleClientError(client: Socket) {
+    const matchId = Array.from(client.rooms.values()).find((room) =>
+      room.startsWith('match:'),
+    );
+
+    if (!matchId) {
+      return;
+    }
+
+    this.logger.log(`Match Id: ${matchId} stopped`);
+
+    this.matchMakingService.stopMatch(this.server, matchId);
+  }
 }

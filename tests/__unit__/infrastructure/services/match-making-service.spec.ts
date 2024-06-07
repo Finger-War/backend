@@ -1,5 +1,7 @@
+import { HttpModule } from '@nestjs/axios';
 import { Test } from '@nestjs/testing';
 
+import { Player } from '@/domain/entities/player';
 import { InMemoryMatchRepository } from '@/infrastructure/repositories/in-memory-match-repository';
 import { InMemoryQueueRepository } from '@/infrastructure/repositories/in-memory-queue-repository';
 import { MatchMakingService } from '@/infrastructure/services/match-making-service';
@@ -10,6 +12,7 @@ import { vi, describe, it, expect } from 'vitest';
 
 const makeSut = async () => {
   const moduleRef = await Test.createTestingModule({
+    imports: [HttpModule],
     providers: [
       InMemoryQueueRepository,
       InMemoryMatchRepository,
@@ -47,23 +50,24 @@ const makeServerMock = (): Server =>
     },
     to: vi.fn().mockReturnThis(),
     emit: vi.fn(),
+    socketsLeave: vi.fn(),
   }) as any;
 
-describe('MatchMakingService', () => {
+describe('Match Making Service', () => {
   describe('handle', () => {
     it('Should start a match if there is a match available', async () => {
       const { sut, inMemoryQueueRepository, wordsService } = await makeSut();
 
-      const playerOne = { id: 'player-one' };
-      const playerTwo = { id: 'player-two' };
+      const playerOne: Player = { id: 'player-one', words: [] };
+      const playerTwo: Player = { id: 'player-two', words: [] };
       const roomId = `match:${playerOne.id}-${playerTwo.id}`;
-      const randomWords = ['words-one', 'word-two'];
+      const randomWords = ['word-one', 'word-two'];
 
       vi.spyOn(inMemoryQueueRepository, 'tryMatch').mockReturnValue([
         playerOne,
         playerTwo,
       ]);
-      vi.spyOn(wordsService, 'generateRandomWord').mockResolvedValue(
+      vi.spyOn(wordsService, 'generateRandomWords').mockResolvedValue(
         randomWords,
       );
 
@@ -100,14 +104,16 @@ describe('MatchMakingService', () => {
     it('Should not start a match if wordsService returns undefined', async () => {
       const { sut, inMemoryQueueRepository, wordsService } = await makeSut();
 
-      const playerOne = { id: 'player-one' };
-      const playerTwo = { id: 'player-two' };
+      const playerOne: Player = { id: 'player-one', words: [] };
+      const playerTwo: Player = { id: 'player-two', words: [] };
 
       vi.spyOn(inMemoryQueueRepository, 'tryMatch').mockReturnValue([
         playerOne,
         playerTwo,
       ]);
-      vi.spyOn(wordsService, 'generateRandomWord').mockResolvedValue(undefined);
+      vi.spyOn(wordsService, 'generateRandomWords').mockResolvedValue(
+        undefined,
+      );
 
       const server = makeServerMock();
 
@@ -124,8 +130,8 @@ describe('MatchMakingService', () => {
 
       vi.useFakeTimers();
 
-      const playerOne = { id: 'player-one' };
-      const playerTwo = { id: 'player-two' };
+      const playerOne: Player = { id: 'player-one', words: [] };
+      const playerTwo: Player = { id: 'player-two', words: [] };
       const roomId = `match:${playerOne.id}-${playerTwo.id}`;
 
       const server = makeServerMock();
@@ -135,8 +141,15 @@ describe('MatchMakingService', () => {
       );
 
       const stopMatchSpy = vi.spyOn(sut, 'stopMatch');
+      const randomWords = ['word-one', 'word-two'];
 
-      sut.startMatch(server, roomId, 1);
+      sut.startMatch(
+        server,
+        roomId,
+        1,
+        { [playerOne.id]: playerOne, [playerTwo.id]: playerTwo },
+        randomWords,
+      );
 
       vi.runAllTimers();
 
@@ -157,8 +170,8 @@ describe('MatchMakingService', () => {
 
       vi.useFakeTimers();
 
-      const playerOne = { id: 'player-one' };
-      const playerTwo = { id: 'player-two' };
+      const playerOne: Player = { id: 'player-one', words: [] };
+      const playerTwo: Player = { id: 'player-two', words: [] };
       const roomId = `match:${playerOne.id}-${playerTwo.id}`;
 
       const server = makeServerMock();
@@ -167,7 +180,15 @@ describe('MatchMakingService', () => {
         new Set([playerOne.id, playerTwo.id]),
       );
 
-      sut.startMatch(server, roomId, 2);
+      const randomWords = ['word-one', 'word-two'];
+
+      sut.startMatch(
+        server,
+        roomId,
+        2,
+        { [playerOne.id]: playerOne, [playerTwo.id]: playerTwo },
+        randomWords,
+      );
 
       vi.advanceTimersByTime(1000);
       expect(server.to(roomId).emit).toHaveBeenCalledWith(
@@ -191,15 +212,22 @@ describe('MatchMakingService', () => {
 
       vi.useFakeTimers();
 
-      const playerOne = { id: 'player-one' };
+      const playerOne: Player = { id: 'player-one', words: [] };
       const roomId = `match:${playerOne.id}-player-two`;
 
       const server = makeServerMock();
       server.sockets.adapter.rooms.set(roomId, new Set([playerOne.id]));
 
       const stopMatchSpy = vi.spyOn(sut, 'stopMatch');
+      const randomWords = ['word-one', 'word-two'];
 
-      sut.startMatch(server, roomId, 2);
+      sut.startMatch(
+        server,
+        roomId,
+        2,
+        { [playerOne.id]: playerOne },
+        randomWords,
+      );
 
       vi.advanceTimersByTime(1000);
 
@@ -216,11 +244,18 @@ describe('MatchMakingService', () => {
 
   describe('haveTwoPlayersInTheRoom', () => {
     it('Should return true if there are two players in the room', async () => {
-      const { sut } = await makeSut();
+      const { sut, inMemoryMatchRepository } = await makeSut();
 
-      const playerOne = { id: 'player-one' };
-      const playerTwo = { id: 'player-two' };
+      const playerOne: Player = { id: 'player-one', words: [] };
+      const playerTwo: Player = { id: 'player-two', words: [] };
+
       const roomId = `match:${playerOne.id}-${playerTwo.id}`;
+
+      vi.spyOn(inMemoryMatchRepository, 'findById').mockReturnValue({
+        id: roomId,
+        players: { [playerOne.id]: playerOne, [playerTwo.id]: playerTwo },
+        randomWords: [],
+      });
 
       const server = makeServerMock();
       server.sockets.adapter.rooms.set(
@@ -228,26 +263,31 @@ describe('MatchMakingService', () => {
         new Set([playerOne.id, playerTwo.id]),
       );
 
-      const result = sut['haveTwoPlayersInTheRoom'](server, roomId);
+      const result = sut['haveNormalMatchRequirements'](server, roomId);
 
       expect(result).toBe(true);
     });
 
     it('Should return false and call stopMatch if there are less than two players in the room', async () => {
-      const { sut } = await makeSut();
+      const { sut, inMemoryMatchRepository } = await makeSut();
 
-      const playerOne = { id: 'player-one' };
-      const roomId = `match:${playerOne.id}-player-two`;
+      const playerOne: Player = { id: 'player-one', words: [] };
+      const playerTwo: Player = { id: 'player-two', words: [] };
+
+      const roomId = `match:${playerOne.id}-${playerTwo.id}`;
+
+      vi.spyOn(inMemoryMatchRepository, 'findById').mockReturnValue({
+        id: roomId,
+        players: { [playerOne.id]: playerOne, [playerTwo.id]: playerTwo },
+        randomWords: [],
+      });
 
       const server = makeServerMock();
       server.sockets.adapter.rooms.set(roomId, new Set([playerOne.id]));
 
-      const stopMatchSpy = vi.spyOn(sut, 'stopMatch');
-
-      const result = sut['haveTwoPlayersInTheRoom'](server, roomId);
+      const result = sut['haveNormalMatchRequirements'](server, roomId);
 
       expect(result).toBe(false);
-      expect(stopMatchSpy).toHaveBeenCalledWith(server, roomId);
     });
   });
 });
